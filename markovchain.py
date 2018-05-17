@@ -1,5 +1,6 @@
 from fire import Fire
-from numpy.random import choice
+from numpy.random import choice as np_choice
+from random import choice as r_choice
 
 
 class MarkovChain:
@@ -25,22 +26,24 @@ class MarkovChain:
         return {right: occurrences[right] / total_occurrences for right in occurrences.keys()}
 
     def next(self, left):
+        if left is None:
+            return r_choice(tuple(self._fragments.keys()))
+
         probabilities = self.probabilities(left)
         rights = tuple(probabilities.keys())
         rights_probabilities = tuple(map(lambda r: probabilities[r], rights))
 
-        return choice(rights, p=rights_probabilities)
+        return np_choice(rights, p=rights_probabilities)
 
 
 def generate_markov_chain(text, depth):
     mc = MarkovChain()
 
-    last_fragment = None
-    for i in range(len(text) - depth + 1):
-        fragment = text[i:i + depth]
+    for i in range(len(text) - depth - depth + 1):
+        left = text[i:i + depth]
+        right = text[i + depth:i + depth + depth]
 
-        mc.add_occurrence(last_fragment, fragment)
-        last_fragment = fragment
+        mc.add_occurrence(left, right)
 
     return mc
 
